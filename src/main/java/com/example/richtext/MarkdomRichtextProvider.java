@@ -39,6 +39,7 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 		this.undesiredNodeKindMapper = Objects.requireNonNull(undesiredNodeKindMapper);
 	}
 
+	@Override
 	public String toCommonmarkText() {
 		return markdomDocument.handle(
 			new CommonmarkTextMarkdomHandler<>(
@@ -48,6 +49,7 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 		).toString();
 	}
 	
+	@Override
 	public List<String> toWarnings() {
 		return compileMessages(
 			markdomRules.getUndesiredNodeKinds(),
@@ -82,6 +84,7 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 		return occuringNodeKinds;
 	}
 	
+	@Override
 	public String toHtmlElementsText(boolean pretty) {
 		return markdomDocument.handle(
 			new FilteringMarkdomHandler<>(
