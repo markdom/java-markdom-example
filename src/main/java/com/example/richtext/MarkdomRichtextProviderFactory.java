@@ -16,7 +16,7 @@ import io.markdom.model.basic.BasicMarkdomFactory;
 
 public class MarkdomRichtextProviderFactory implements RichtextProviderFactory {
 
-	private static final Function<MarkdomNodeKind, String> DEFAULT_UNDESIRED_NODE_KIND_MAPPER = kind -> {
+	public static final Function<MarkdomNodeKind, String> DEFAULT_UNDESIRED_NODE_KIND_MAPPER = kind -> {
 		return "i18n.messages.richtext.undesiredNode." + kind;
 	};
 
@@ -46,8 +46,8 @@ public class MarkdomRichtextProviderFactory implements RichtextProviderFactory {
 				new MarkdomDocumentMarkdomHandler(new BasicMarkdomFactory())
 			),
 			markdomRules,
-			commonmarkTextConfiguration,
-			undesiredNodeKindMapper
+			undesiredNodeKindMapper,
+			commonmarkTextConfiguration
 		);
 	}
 

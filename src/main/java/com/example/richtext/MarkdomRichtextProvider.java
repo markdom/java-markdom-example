@@ -8,15 +8,18 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+import javax.xml.parsers.DocumentBuilder;
+
+import org.w3c.dom.Document;
+
 import io.markdom.common.MarkdomNodeKind;
 import io.markdom.handler.AuditingMarkdomHandler;
-import io.markdom.handler.BlacklistNodeKindMarkdomFilterHandler;
-import io.markdom.handler.ConsumingNodeKindMarkdomAuditHandler;
 import io.markdom.handler.FilteringMarkdomHandler;
 import io.markdom.handler.IdleMarkdomHandler;
-import io.markdom.handler.NodeKindMarkdomAudit;
-import io.markdom.handler.NodeKindMarkdomFilter;
+import io.markdom.handler.audit.nodekind.NodeKindMarkdomAudit;
+import io.markdom.handler.filter.nodekind.NodeKindMarkdomFilter;
 import io.markdom.handler.html.jsoup.JsoupHtmlDocumentMarkdomHandler;
+import io.markdom.handler.html.w3c.XhtmlDocumentMarkdomHandler;
 import io.markdom.handler.text.commonmark.CommonmarkTextConfiguration;
 import io.markdom.handler.text.commonmark.CommonmarkTextMarkdomHandler;
 import io.markdom.model.MarkdomDocument;
@@ -25,18 +28,18 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 
 	private final MarkdomDocument markdomDocument;
 
-	private final MarkdomRichtextProviderRules markdomRules;
-
-	private final CommonmarkTextConfiguration commonmarkTextConfiguration;
+	private final Set<MarkdomNodeKind> undesiredNodeKinds;
 
 	private final Function<MarkdomNodeKind, String> undesiredNodeKindMapper;
 
+	private final CommonmarkTextConfiguration commonmarkTextConfiguration;
+
 	public MarkdomRichtextProvider(MarkdomDocument markdomDocument, MarkdomRichtextProviderRules markdomRules,
-		CommonmarkTextConfiguration commonmarkTextConfiguration, Function<MarkdomNodeKind, String> undesiredNodeKindMapper) {
+		Function<MarkdomNodeKind, String> undesiredNodeKindMapper, CommonmarkTextConfiguration commonmarkTextConfiguration) {
 		this.markdomDocument = Objects.requireNonNull(markdomDocument);
-		this.markdomRules = Objects.requireNonNull(markdomRules);
-		this.commonmarkTextConfiguration = Objects.requireNonNull(commonmarkTextConfiguration);
+		this.undesiredNodeKinds = Objects.requireNonNull(markdomRules).getUndesiredNodeKinds();
 		this.undesiredNodeKindMapper = Objects.requireNonNull(undesiredNodeKindMapper);
+		this.commonmarkTextConfiguration = Objects.requireNonNull(commonmarkTextConfiguration);
 	}
 
 	@Override
@@ -51,22 +54,7 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 	
 	@Override
 	public List<String> toWarnings() {
-		return compileMessages(
-			markdomRules.getUndesiredNodeKinds(),
-			auditMarkdomDocument()
-		);
-	}
-
-	private List<String> compileMessages(Set<MarkdomNodeKind> undesiredTypes, Set<MarkdomNodeKind> occuringTypes) {
-		List<String> messages = new LinkedList<>();
-		for (MarkdomNodeKind nodeKind : MarkdomNodeKind.values()) {
-			if (occuringTypes.contains(nodeKind)) {
-				if (undesiredTypes.contains(nodeKind)) {
-					messages.add(undesiredNodeKindMapper.apply(nodeKind));
-				}
-			}
-		}
-		return messages;
+		return compileMessages(auditMarkdomDocument());
 	}
 
 	private Set<MarkdomNodeKind> auditMarkdomDocument() {
@@ -74,14 +62,22 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 		markdomDocument.handle(
 			new AuditingMarkdomHandler<>(
 				new IdleMarkdomHandler<>(),
-				new NodeKindMarkdomAudit(
-					new ConsumingNodeKindMarkdomAuditHandler(
-						occuringNodeKinds::add
-					)
-				)
+				new NodeKindMarkdomAudit(occuringNodeKinds::add)
 			)
 		);
 		return occuringNodeKinds;
+	}
+	
+	private List<String> compileMessages(Set<MarkdomNodeKind> occuringNodeKinds) {
+		List<String> messages = new LinkedList<>();
+		for (MarkdomNodeKind nodeKind : MarkdomNodeKind.values()) {
+			if (occuringNodeKinds.contains(nodeKind)) {
+				if (undesiredNodeKinds.contains(nodeKind)) {
+					messages.add(undesiredNodeKindMapper.apply(nodeKind));
+				}
+			}
+		}
+		return messages;
 	}
 	
 	@Override
@@ -89,14 +85,19 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 		return markdomDocument.handle(
 			new FilteringMarkdomHandler<>(
 				new JsoupHtmlDocumentMarkdomHandler(),
-				new NodeKindMarkdomFilter(
-					new BlacklistNodeKindMarkdomFilterHandler(
-						markdomRules.getUndesiredNodeKinds()
-					)
-				)
+				new NodeKindMarkdomFilter(undesiredNodeKinds::contains)
 			)
 		).asElementsText(pretty);
 	}
-
+	
+	@Override
+	public Document toXhtmlDocument(DocumentBuilder documentBuilder, String title) {
+		return markdomDocument.handle(
+			new FilteringMarkdomHandler<>(
+				new XhtmlDocumentMarkdomHandler(documentBuilder, title),
+				new NodeKindMarkdomFilter(undesiredNodeKinds::contains)
+			)
+		).asDocument();
+	}
 
 }

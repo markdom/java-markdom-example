@@ -21,7 +21,14 @@
 		<dependency>
 			<groupId>io.markdom</groupId>
 			<artifactId>suite</artifactId>
-			<version>0.0.3</version>
+			<version>0.0.4</version>
+		</dependency>
+
+		<!-- pdf / flying saucer -->
+		<dependency>
+			<groupId>org.xhtmlrenderer</groupId>
+			<artifactId>flying-saucer-pdf-openpdf</artifactId>
+			<version>9.1.18</version>
 		</dependency>
 
 	</dependencies>

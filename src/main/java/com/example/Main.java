@@ -1,7 +1,12 @@
 package com.example;
 
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import com.example.richtext.MarkdomRichtextProviderFactory;
 import com.example.richtext.RichtextContext;
@@ -10,7 +15,7 @@ import com.example.richtext.RichtextProviderFactory;
 
 public class Main {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 
 		RichtextProviderFactory factory = new MarkdomRichtextProviderFactory(RichtextContext.DETAILS);
 		RichtextProvider provider = factory.fromCommonmark(new InputStreamReader(Main.class.getResourceAsStream("/test.md")));
@@ -26,6 +31,13 @@ public class Main {
 		System.out.println(provider.toHtmlElementsText(true));
 		System.out.println();
 		System.out.println();
+
+		ITextRenderer renderer = new ITextRenderer();
+		DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		renderer.setDocument(provider.toXhtmlDocument(documentBuilder, "test.md"), null);
+		renderer.layout();
+
+		renderer.createPDF(new FileOutputStream("test.pdf"));
 
 	}
 
