@@ -2,6 +2,8 @@ package com.example;
 
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,6 +16,13 @@ import com.example.richtext.RichtextProvider;
 import com.example.richtext.RichtextProviderFactory;
 
 public class Main {
+
+	private static final Map<String, String> ABBREVIATIONS = new HashMap<>();
+
+	static {
+		ABBREVIATIONS.put("js", "JavaScript");
+		ABBREVIATIONS.put("mm", "millimeter");
+}
 
 	public static void main(String[] args) throws Exception {
 
@@ -28,7 +37,7 @@ public class Main {
 		System.out.println();
 		System.out.println();
 
-		System.out.println(provider.toHtmlElementsText(true));
+		System.out.println(provider.toHtmlElementsText(ABBREVIATIONS, true));
 		System.out.println();
 		System.out.println();
 

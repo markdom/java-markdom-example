@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -81,10 +82,10 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 	}
 	
 	@Override
-	public String toHtmlElementsText(boolean pretty) {
+	public String toHtmlElementsText(Map<String, String> abbreviations, boolean pretty) {
 		return markdomDocument.handle(
 			new FilteringMarkdomHandler<>(
-				new JsoupHtmlDocumentMarkdomHandler(),
+				new JsoupHtmlDocumentMarkdomHandler(new AbbreviationsHtmlDelegate(abbreviations)),
 				new NodeKindMarkdomFilter(undesiredNodeKinds::contains)
 			)
 		).asElementsText(pretty);
