@@ -16,16 +16,33 @@ A specific set of undesired forms of rich-text is represented as a `RichtextCont
 
 A `MarkdomRichtextProviderFactory` is constructed with such a `RichtextContext` and constructs instances of `MarkdomRichtextProvider`.  A `MarkdomRichtextProvider` internally holds a `MarkdomDocument` and uses different implementatiojns of `MarkdomHandler` to perform its functionality.
 
+Creating `RichtextProvider`:
 ```java	
 RichtextProviderFactory factory = new MarkdomRichtextProviderFactory(RichtextContext.DETAILS);
 RichtextProvider provider = factory.fromCommonmark(getCommonmarkTextAsInputStream()));
+````
 
+Creating normalized Commonmark text:
+```java	
 System.out.println(provider.toCommonmarkText());
+```
 
+Creating a list of warning: 
+```java	
 System.out.println(String.join("\n", provider.toWarnings()));
+```
 
-System.out.println(provider.toHtmlElementsText(true));
+Creating a HTML text snippet (with `abbr`-tags):
+```java	
+Map<String, String> abbreviations = new HashMap<>();
+abbreviations.put("js", "JavaScript");
+abbreviations.put("mm", "millimeter");
 
+System.out.println(provider.toHtmlElementsText(abbreviations, true));
+```
+
+Creating a PDF document (via XHTML):
+```java	
 ITextRenderer renderer = new ITextRenderer();
 DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 renderer.setDocument(provider.toXhtmlDocument(documentBuilder, "test.md"), null);

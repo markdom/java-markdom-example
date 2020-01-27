@@ -17,13 +17,6 @@ import com.example.richtext.RichtextProviderFactory;
 
 public class Main {
 
-	private static final Map<String, String> ABBREVIATIONS = new HashMap<>();
-
-	static {
-		ABBREVIATIONS.put("js", "JavaScript");
-		ABBREVIATIONS.put("mm", "millimeter");
-}
-
 	public static void main(String[] args) throws Exception {
 
 		RichtextProviderFactory factory = new MarkdomRichtextProviderFactory(RichtextContext.DETAILS);
@@ -37,7 +30,11 @@ public class Main {
 		System.out.println();
 		System.out.println();
 
-		System.out.println(provider.toHtmlElementsText(ABBREVIATIONS, true));
+		Map<String, String> abbreviations = new HashMap<>();
+		abbreviations.put("js", "JavaScript");
+		abbreviations.put("mm", "millimeter");
+
+		System.out.println(provider.toHtmlElementsText(abbreviations, true));
 		System.out.println();
 		System.out.println();
 
