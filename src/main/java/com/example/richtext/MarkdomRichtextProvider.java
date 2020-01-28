@@ -88,7 +88,7 @@ public class MarkdomRichtextProvider implements RichtextProvider {
 				new JsoupHtmlDocumentMarkdomHandler(new AbbreviationsHtmlDelegate(abbreviations)),
 				new NodeKindMarkdomFilter(undesiredNodeKinds::contains)
 			)
-		).asElementsText(pretty);
+		).asNodesText(pretty);
 	}
 	
 	@Override
